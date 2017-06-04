@@ -79,7 +79,7 @@ class PaymentsController < ApplicationController
 
   def pay_notify
     do_payment_test
-    render :json => "ok"
+
   end
 
   def test
@@ -160,6 +160,8 @@ class PaymentsController < ApplicationController
         ChinaSMS.use :yunpian, password: ENV["sms_pay"]
         ChinaSMS.to @payment.user.cellphone, "【大赛加油站】您已成功支付，感谢支持！可进入个人订单查看详情。希望成为你5票中的1票：http://t.cn/RS6vf95"
         @payment.do_success_payment! params
+        @payment.do_success_image_migration
+        render :json => "ok"
       else
         @payment.do_failed_payment! params
       end
