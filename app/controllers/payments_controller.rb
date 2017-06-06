@@ -158,7 +158,7 @@ class PaymentsController < ApplicationController
     unless @payment.is_success? # 避免同步通知和异步通知多次调用
       if is_payment_success?
         ChinaSMS.use :yunpian, password: ENV["sms_pay"]
-        if user.is_overseas?
+        if @payment.user.is_overseas?
           ChinaSMS.to @payment.user.cellphone, "【大赛加油站】您已成功支付，感谢支持！可进入个人订单查看详情。希望能成为您10票中的1票：http://t.cn/RSSdARt"
         else
           ChinaSMS.to @payment.user.cellphone, "【大賽加油站】您已成功支付，感謝支持！可進入個人訂單查看詳情。希望能成為您10票中的1票：http://t.cn/RSSdARt"
