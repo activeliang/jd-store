@@ -11,7 +11,7 @@ class PaymentsController < ApplicationController
     @order = current_user.orders.find_by_token(params[:order_token])
     @payment = current_user.payments.find_by(payment_no: params[:payment_no])
     if @order.present? && @payment.present? && @order.payment = @payment
-      a = 1
+      true
     elsif @order.is_paid?
       redirect_to root_path, warning: "该订单已支付！"
     else
