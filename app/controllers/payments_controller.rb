@@ -4,8 +4,6 @@ class PaymentsController < ApplicationController
 
   before_action :auth_user, except: [:pay_return, :pay_notify]
   before_action :auth_request, only: [:pay_return, :pay_notify]
-  # before_action :find_and_validate_payment_no, only: [:pay_return, :pay_notify]
-
 
   def index
     @order = current_user.orders.find_by_token(params[:order_token])
@@ -64,10 +62,10 @@ class PaymentsController < ApplicationController
   end
 
   def get_payment_status
-    body2 = RestClient.get "http://codepay.fateqq.com:52888/ispay?" + {
+    body2 = RestClient.get EVN["alipay_is_paid_url"] + {
       id: ENV["alipay_pid"],
       order_id: @raw_order,
-      token: "xJgDafGbnCJRiCaDFt9YFcjhq4Qb6NEp"
+      token: ENV["require_token"]
     }.to_query
     order_status = JSON.parse(body2)["status"]
   end
@@ -83,10 +81,10 @@ class PaymentsController < ApplicationController
   end
 
   def test
-    body2 = RestClient.get "http://codepay.fateqq.com:52888/ispay?" + {
+    body2 = RestClient.get EVN["alipay_is_paid_url"] + {
       id: ENV["alipay_pid"],
       order_id: params[:order],
-      token: "xJgDafGbnCJRiCaDFt9YFcjhq4Qb6NEp",
+      token: ENV["require_token"],
       call: ""
     }.to_query
     order_status = JSON.parse(body2)["status"]
@@ -155,7 +153,7 @@ class PaymentsController < ApplicationController
   def do_payment_test
 
     @payment = Payment.find_by_payment_no(params[:out_trade_no])
-    unless @payment.is_success? # 避免同步通知和异步通知多次调用
+    unless @payment.is_success?
       if is_payment_success?
         ChinaSMS.use :yunpian, password: ENV["sms_pay"]
         if @payment.user.is_overseas?
@@ -171,20 +169,7 @@ class PaymentsController < ApplicationController
     end
   end
 
-  # def do_payment
-  #
-  #   unless @payment.is_success? # 避免同步通知和异步通知多次调用
-  #     if is_payment_success?
-  #       @payment.do_success_payment! params
-  #       redirect_to success_payments_path
-  #     else
-  #       @payment.do_failed_payment! params
-  #       redirect_to failed_payments_path
-  #     end
-  #   else
-  #    redirect_to success_payments_path
-  #   end
-  # end
+
 
   def auth_request_pause
   unless build_is_request_sign_valid?(params)
@@ -264,17 +249,10 @@ def build_generate_sign options
 end
 
 
-  def build_sign_data data_hash
-    data_hash.delete_if { |k, v| k == "sign_type" || k == "sign" || v.blank? }
-    data_hash.to_a.map { |x| x.join('=') }.sort.join('&')
-  end
-
-
-
-
-
-
-
+def build_sign_data data_hash
+  data_hash.delete_if { |k, v| k == "sign_type" || k == "sign" || v.blank? }
+  data_hash.to_a.map { |x| x.join('=') }.sort.join('&')
+end
 
 
 end
