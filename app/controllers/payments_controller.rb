@@ -81,7 +81,7 @@ class PaymentsController < ApplicationController
   end
 
   def test
-    body2 = RestClient.get EVN["alipay_is_paid_url"] + {
+    body2 = RestClient.get ENV["alipay_is_paid_url"] + {
       id: ENV["alipay_pid"],
       order_id: params[:order],
       token: ENV["require_token"],
